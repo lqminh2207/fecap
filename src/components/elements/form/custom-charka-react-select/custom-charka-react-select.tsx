@@ -1,9 +1,11 @@
 import type React from 'react';
+import type { ElementType } from 'react';
 import { useMemo } from 'react';
 
 import { Box, Icon, Tooltip } from '@chakra-ui/react';
 import { Select, chakraComponents } from 'chakra-react-select';
 import { Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 import type { MayBeController } from '../types';
 import type { FieldWrapperProps } from '@/components/elements';
@@ -28,7 +30,7 @@ export interface CustomOptionSelectBase extends OptionBase {
   value: number | string;
   isDisabled?: boolean;
   onClickOption?: () => void;
-  IconOption?: any;
+  IconOption?: ElementType;
 }
 
 export type CustomChakraReactSelectProps<
@@ -49,6 +51,7 @@ export const CustomChakraReactSelect = <
 >(
   props: CustomChakraReactSelectProps<TFormValues, IsMulti, TOption>
 ) => {
+  const { t } = useTranslation();
   const {
     control,
     name,
@@ -140,7 +143,7 @@ export const CustomChakraReactSelect = <
         bg: state.isSelected ? 'primary' : 'white',
         _hover: { bg: 'primary', color: 'white' },
         transition: 'background 0.3s ease',
-        fontSize: { base: 'sm', '2xl': 'md' },
+        fontSize: { base: 'sm', '2xl': 'sm' },
       }),
 
       container: (provide) => ({
@@ -150,29 +153,28 @@ export const CustomChakraReactSelect = <
       }),
       noOptionsMessage: (provide) => ({
         ...provide,
-        fontSize: { base: 'sm', '2xl': 'md' },
+        fontSize: { base: 'sm', '2xl': 'sm' },
         p: { base: 0, '2xl': 1 },
       }),
       loadingMessage: (provide) => ({
         ...provide,
-        fontSize: { base: 'sm', '2xl': 'md' },
+        fontSize: { base: 'sm', '2xl': 'sm' },
         p: { base: 0, '2xl': 1 },
       }),
       placeholder: (provide) => ({
         ...provide,
         color: 'textColor',
-        fontWeight: 'medium',
-        fontSize: { base: 'xs', '2xl': 'sm' },
+        fontSize: { base: 'xs', '2xl': 'xs' },
       }),
       multiValue: (provide) => ({
         ...provide,
-        fontSize: { base: 'sm', '2xl': 'md' },
+        fontSize: { base: 'sm', '2xl': 'sm' },
         fontWeight: 'medium',
       }),
 
       singleValue: (provide) => ({
         ...provide,
-        fontSize: { base: 'sm', '2xl': 'md' },
+        fontSize: { base: 'sm', '2xl': 'sm' },
       }),
 
       ...chakraStyles,
@@ -182,17 +184,17 @@ export const CustomChakraReactSelect = <
 
   const basePropsSelect: Partial<ChakraSelectProps<TOption, IsMulti, GroupBase<TOption>>> = useMemo(
     () => ({
-      size: { base: 'md', xl: 'lg' },
+      size: { base: 'md', xl: 'md' },
       menuPosition: 'fixed',
       closeMenuOnSelect: !isMulti,
       components: customComponents,
       chakraStyles: stylesComponents,
       focusBorderColor: 'primary',
       autoFocus: false,
-      placeholder: 'Select...',
+      placeholder: `${t('common.choose')}...`,
       isClearable: true,
     }),
-    [customComponents, isMulti, stylesComponents]
+    [customComponents, isMulti, stylesComponents, t]
   );
 
   return control && name ? (
@@ -263,7 +265,7 @@ export const CustomChakraReactSelect = <
       <Select
         isMulti={isMulti}
         name={name as string}
-        noOptionsMessage={() => 'No data'}
+        noOptionsMessage={() => t('common.noData')}
         {...basePropsSelect}
         {...selectProps}
       />

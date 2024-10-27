@@ -1,4 +1,5 @@
 import { Button, Stack, Text } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 
 import { useRemoveLabelMutation } from '../apis/delete-label.api';
 import { removeLabelFormSchema } from '../validations/remove-label.validations';
@@ -14,10 +15,12 @@ export interface RemoveLabelWidgetProps {
   label: ILabel;
   isOpen: boolean;
   onClose: () => void;
+  isDefault?: boolean;
 }
 
 export function RemoveLabelWidget(props: RemoveLabelWidgetProps) {
-  const { label, listLabel, isOpen, onClose } = props;
+  const { t } = useTranslation();
+  const { label, listLabel, isOpen, onClose, isDefault } = props;
 
   const formRemoveLabel = useFormWithSchema({
     schema: removeLabelFormSchema,
@@ -29,7 +32,10 @@ export function RemoveLabelWidget(props: RemoveLabelWidgetProps) {
     reset,
   } = formRemoveLabel;
 
-  const { mutate, isPending: isLoading } = useRemoveLabelMutation({ closeAlert: onClose });
+  const { mutate, isPending: isLoading } = useRemoveLabelMutation({
+    closeAlert: onClose,
+    isDefault,
+  });
 
   function onSubmit(values: RemoveLabelFormValues) {
     if (isLoading) return;
@@ -59,10 +65,10 @@ export function RemoveLabelWidget(props: RemoveLabelWidgetProps) {
           }}
           isDisabled={isLoading || !isDirty}
         >
-          Delete
+          {t('actions.delete')}
         </Button>
       )}
-      title="Delete label"
+      title={`${t('actions.delete')} ${t('common.label').toLowerCase()}`}
       isOpen={isOpen}
       onClose={onClose}
       onCloseComplete={reset}
@@ -70,12 +76,12 @@ export function RemoveLabelWidget(props: RemoveLabelWidgetProps) {
       <CustomFormProvider id="form-upsert-label" form={formRemoveLabel} onSubmit={onSubmit}>
         <Stack spacing={5}>
           <Text>
-            Your project has {label.issueCount} {`"${label.title}"`} issues. Before you can delete
+            {/* Your project has {label.issueCount} {`"${label.title}"`} issues. Before you can delete */}
             this issue type, change {`"${label.title}"`} issues to another type.
           </Text>
           <CustomChakraReactSelect
             isSearchable
-            placeholder="Choose label"
+            placeholder={`${t('common.choose')} ${t('common.label').toLowerCase()}`}
             label={`Change all existing "${label.title}" issues to`}
             size="lg"
             options={listLabel

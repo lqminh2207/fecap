@@ -15,6 +15,7 @@ import {
   Text,
   Tr,
 } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 
 import { DraggableRow, type DraggableRowProps } from './draggable-row';
 import TableHeader from './table-header';
@@ -105,6 +106,7 @@ function TableComponent<ObjectType extends { id?: string | null } = {}>({
   hasDraggable,
   handleReorderRow,
 }: TableComponentProps<ObjectType>) {
+  const { t } = useTranslation();
   const [page, setPage] = useState(currentPage);
   const [sortedData, setSortedData] = useState<ObjectType[]>([]);
   const [persistData, setPersistData] = useState<ObjectType[]>([]);
@@ -204,7 +206,7 @@ function TableComponent<ObjectType extends { id?: string | null } = {}>({
       <Box w="full">
         {!isLoading && isError ? (
           <Flex my={4} justify="center">
-            <Text>No data</Text>
+            <Text>{t('common.noData')}</Text>
           </Flex>
         ) : isLoading ? (
           <Table bg="white">
@@ -225,12 +227,12 @@ function TableComponent<ObjectType extends { id?: string | null } = {}>({
           </Table>
         ) : (
           <TableContainer {...TableProps} maxW="full" shadow="md">
-            {/* <TableSearch handleOnSearch={handleOnSearch} /> */}
             <Table
               // sx={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}
-              size="md"
+              size="sm"
               overflow="hidden"
               borderRadius={2}
+              variant="simple"
             >
               {!withoutHeader && (
                 <TableHeader<ObjectType>
@@ -257,7 +259,7 @@ function TableComponent<ObjectType extends { id?: string | null } = {}>({
                             <Checkbox
                               pt="2px"
                               isChecked={persistData.some((pd) => pd.id === object.id)}
-                              size="lg"
+                              size="md"
                               onChange={(e) => {
                                 setSelected([object], e.target.checked);
                               }}
@@ -270,7 +272,7 @@ function TableComponent<ObjectType extends { id?: string | null } = {}>({
                               <Td
                                 key={String(column.key)}
                                 border="none"
-                                py={2}
+                                py={1}
                                 isNumeric={
                                   // typeof object[column.key] === 'number' && column.key === 'id'
                                   false
@@ -294,7 +296,7 @@ function TableComponent<ObjectType extends { id?: string | null } = {}>({
                         ))}
 
                         {additionalFeature && (
-                          <Td py={2} border="none" textAlign="right" pos="relative">
+                          <Td py={1.5} border="none" textAlign="right" pos="relative">
                             {additionalFeature(object)}
                           </Td>
                         )}
@@ -325,7 +327,7 @@ function TableComponent<ObjectType extends { id?: string | null } = {}>({
             </Table>
             {sortedData && !sortedData.length && (
               <Flex my={4} justify="center">
-                <Text>No data</Text>
+                <Text>{t('common.noData')}</Text>
               </Flex>
             )}
           </TableContainer>

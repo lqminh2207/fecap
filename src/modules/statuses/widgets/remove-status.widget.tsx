@@ -1,4 +1,5 @@
 import { Button, Stack, Text } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 
 import { useRemoveStatusMutation } from '../apis/delete-status.api';
 import { removeStatusFormSchema } from '../validations/remove-status.validations';
@@ -15,10 +16,12 @@ export interface RemoveStatusWidgetProps {
   status: IStatus;
   isOpen: boolean;
   onClose: () => void;
+  isDefault?: boolean;
 }
 
 export function RemoveStatusWidget(props: RemoveStatusWidgetProps) {
-  const { status, listStatus, isOpen, onClose } = props;
+  const { t } = useTranslation();
+  const { status, listStatus, isOpen, onClose, isDefault } = props;
 
   const formRemoveStatus = useFormWithSchema({
     schema: removeStatusFormSchema,
@@ -30,7 +33,10 @@ export function RemoveStatusWidget(props: RemoveStatusWidgetProps) {
     reset,
   } = formRemoveStatus;
 
-  const { mutate, isPending: isLoading } = useRemoveStatusMutation({ closeAlert: onClose });
+  const { mutate, isPending: isLoading } = useRemoveStatusMutation({
+    closeAlert: onClose,
+    isDefault,
+  });
 
   function onSubmit(values: RemoveStatusFormValues) {
     if (isLoading) return;
@@ -60,10 +66,10 @@ export function RemoveStatusWidget(props: RemoveStatusWidgetProps) {
           }}
           isDisabled={isLoading || !isDirty}
         >
-          Delete
+          {t('actions.delete')}
         </Button>
       )}
-      title="Delete status"
+      title={`${t('actions.delete')} ${t('common.status').toLowerCase()}`}
       isOpen={isOpen}
       onClose={onClose}
       onCloseComplete={reset}
@@ -71,13 +77,15 @@ export function RemoveStatusWidget(props: RemoveStatusWidgetProps) {
       <CustomFormProvider id="form-upsert-status" form={formRemoveStatus} onSubmit={onSubmit}>
         <Stack spacing={5}>
           <Text>
-            Your project has {status.issueCount} {`"${status.name}"`} issues. Before you can delete
-            this issue type, change {`"${status.name}"`} issues to another type.
+            {t('messages.deleteStatusBody', {
+              issueCount: status.issueCount,
+              statusName: status.name,
+            })}
           </Text>
           <CustomChakraReactSelect
             isSearchable
-            placeholder="Choose status"
-            label={`Change all existing "${status.name}" issues to`}
+            placeholder={`${t('common.choose')} ${t('common.status').toLowerCase()}`}
+            label={t('messages.deleteStatusLabel', { statusName: status.name })}
             size="lg"
             options={listStatus
               .filter((l) => l.id !== status.id)

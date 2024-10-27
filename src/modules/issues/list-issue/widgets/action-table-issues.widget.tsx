@@ -1,4 +1,5 @@
 import { Box, Button, Grid, GridItem, HStack, Spacer } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
 import { AddNewIssueWidget } from './add-new-issue.widget';
@@ -8,13 +9,14 @@ import { CustomChakraReactSelect, SearchInput } from '@/components/elements';
 import { ISSUE_PRIORITY_OPTIONS } from '@/configs';
 
 export function ActionTableIssuesWidget() {
+  const { t } = useTranslation();
   const { issuesQueryState, setIssuesQueryFilterState } = useIssuesQueryFilterStateContext();
   const { pathname } = useLocation();
 
   const isShowFilterIssue = pathname.includes('issues');
 
   return (
-    <Box p={5} mb={6} rounded={2.5} bg="white" w="full" shadow="0 1px 4px 0 #0002">
+    <Box p={5} py={3} mb={6} rounded={2.5} bg="white" w="full" shadow="0 1px 4px 0 #0002">
       <HStack justify="space-between">
         <Grid
           w={{
@@ -72,7 +74,7 @@ export function ActionTableIssuesWidget() {
           <>
             <Spacer />
             <AddNewIssueWidget>
-              <Button leftIcon={<>+</>}>Create</Button>
+              <Button leftIcon={<>+</>}>{t('common.create')}</Button>
             </AddNewIssueWidget>
           </>
         )}

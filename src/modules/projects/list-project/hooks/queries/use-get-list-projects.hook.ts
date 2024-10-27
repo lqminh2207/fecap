@@ -50,8 +50,6 @@ export function useGetListProjectQuery(props: UseGetListProjectQueryProps = {}) 
         {
           pageIndex,
           pageSize,
-          orderBy: 'createDate',
-          orderByDesc: 'desc',
         },
         params
       ),

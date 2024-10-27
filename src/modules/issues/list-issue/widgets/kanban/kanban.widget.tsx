@@ -8,15 +8,21 @@ import { triggerPostMoveFlash } from '@atlaskit/pragmatic-drag-and-drop-flourish
 import { extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { getReorderDestinationIndex } from '@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index';
 import * as liveRegion from '@atlaskit/pragmatic-drag-and-drop-live-region';
+import { Box, Text } from '@chakra-ui/react';
+import { useParams } from 'react-router-dom';
 import invariant from 'tiny-invariant';
 
-import { type ColumnMap, type ColumnType, getBasicData, type Person } from './data/people';
+import Connector from '../signalR-connection';
+import { type ColumnMap, type ColumnType, type Person, useGetBasicData } from './data/people';
 import Board from './pieces/board/board';
 import { BoardContext, type BoardContextValue } from './pieces/board/board-context';
+import BoardSkeleton from './pieces/board/board-skeleton';
 import { Column } from './pieces/board/column';
 import { createRegistry } from './pieces/board/registry';
 
 import type { Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
+
+import { getAccessToken } from '@/libs/helpers';
 
 type Outcome =
   | {
@@ -51,23 +57,62 @@ type BoardState = {
   lastOperation: Operation | null;
 };
 
-export default function KanbanExample() {
-  const [data, setData] = useState<BoardState>(() => {
-    const base = getBasicData();
-    const savedData = localStorage.getItem('kanbanDataEx');
-    if (savedData) {
-      return JSON.parse(savedData) as BoardState;
-    }
-    return {
-      ...base,
-      lastOperation: null,
+export default function KanbanWidget() {
+  const { projectId } = useParams();
+  const accessToken = getAccessToken();
+  const { columnMap, orderedColumnIds, isLoading, refetch, isRefetching } = useGetBasicData();
+
+  const [lastActionId, setLastActionId] = useState<string | null>(null);
+
+  const { sendMessage, orderStatusEvents, connection } = Connector(
+    accessToken || '',
+    projectId || ''
+  );
+
+  useEffect(() => {
+    orderStatusEvents(() => {
+      const storedActionId = localStorage.getItem('lastActionId');
+      if (storedActionId !== lastActionId) {
+        refetch();
+      }
+    });
+
+    return () => {
+      // Unsubscribe from the event when the component unmounts
+      connection.off('StatusOrderResponse');
     };
   });
+
+  const [data, setData] = useState<BoardState>(() => ({
+    columnMap,
+    orderedColumnIds,
+    lastOperation: null,
+  }));
+
+  useEffect(() => {
+    if ((!isLoading || !isRefetching) && columnMap && orderedColumnIds) {
+      setData({
+        columnMap,
+        orderedColumnIds,
+        lastOperation: null,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, isRefetching]);
+
+  useEffect(() => {
+    // Cleanup the stored action ID after a short period (optional)
+    const timer = setTimeout(() => {
+      localStorage.removeItem('lastActionId');
+      setLastActionId(null);
+    }, 5000); // Clear the ID after 5 seconds (adjust as needed)
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const stableData = useRef(data);
   useEffect(() => {
     stableData.current = data;
-    localStorage.setItem('kanbanDataEx', JSON.stringify(data));
   }, [data]);
 
   const [registry] = useState(createRegistry);
@@ -172,6 +217,10 @@ export default function KanbanExample() {
       trigger?: Trigger;
     }) => {
       setData((data) => {
+        const actionId = Date.now().toString(); // Generate a unique ID (could use a library for unique IDs)
+        setLastActionId(actionId);
+        localStorage.setItem('lastActionId', actionId);
+
         const outcome: Outcome = {
           type: 'column-reorder',
           columnId: data.orderedColumnIds[startIndex],
@@ -191,10 +240,18 @@ export default function KanbanExample() {
             trigger,
           },
         };
-        console.log('result', a);
+
+        if (startIndex !== finishIndex) {
+          sendMessage({
+            projectId: projectId || '',
+            statusId: outcome.columnId,
+            position: outcome.finishIndex,
+          });
+        }
         return a;
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
@@ -465,14 +522,22 @@ export default function KanbanExample() {
     [getColumns, reorderColumn, reorderCard, registry, moveCard, instanceId]
   );
 
+  if (isLoading || isRefetching) return <BoardSkeleton />;
+
   return (
     <AppProvider>
       <BoardContext.Provider value={contextValue}>
-        <Board>
-          {data.orderedColumnIds.map((columnId) => (
-            <Column key={columnId} column={data.columnMap[columnId]} />
-          ))}
-        </Board>
+        {data.orderedColumnIds.length > 0 ? (
+          <Board>
+            {data.orderedColumnIds.map((columnId) => (
+              <Column key={columnId} column={data.columnMap[columnId]} />
+            ))}
+          </Board>
+        ) : (
+          <Box w="full" bg="white" p={5} rounded={2} textAlign="center">
+            <Text fontSize="20px">No data</Text>
+          </Box>
+        )}
       </BoardContext.Provider>
     </AppProvider>
   );

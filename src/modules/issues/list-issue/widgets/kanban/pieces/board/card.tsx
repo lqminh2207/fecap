@@ -29,7 +29,7 @@ import invariant from 'tiny-invariant';
 
 import { useBoardContext } from './board-context';
 import { useColumnContext } from './column-context';
-import { type ColumnType, type Person } from '../../data/people';
+import { type Person } from '../../data/people';
 
 type State =
   | { type: 'idle' }
@@ -77,29 +77,8 @@ type CardPrimitiveProps = {
   actionMenuTriggerRef?: Ref<HTMLButtonElement>;
 };
 
-function MoveToOtherColumnItem({
-  targetColumn,
-  startIndex,
-}: {
-  targetColumn: ColumnType;
-  startIndex: number;
-}) {
-  const { moveCard } = useBoardContext();
-  const { columnId } = useColumnContext();
-
-  const onClick = useCallback(() => {
-    moveCard({
-      startColumnId: columnId,
-      finishColumnId: targetColumn.columnId,
-      itemIndexInStartColumn: startIndex,
-    });
-  }, [columnId, moveCard, startIndex, targetColumn.columnId]);
-
-  return <DropdownItem onClick={onClick}>{targetColumn.title}</DropdownItem>;
-}
-
 function LazyDropdownItems({ userId }: { userId: string }) {
-  const { getColumns, reorderCard } = useBoardContext();
+  const { reorderCard } = useBoardContext();
   const { columnId, getCardIndex, getNumCards } = useColumnContext();
 
   const numCards = getNumCards();
@@ -109,14 +88,6 @@ function LazyDropdownItems({ userId }: { userId: string }) {
     reorderCard({ columnId, startIndex, finishIndex: 0 });
   }, [columnId, reorderCard, startIndex]);
 
-  const moveUp = useCallback(() => {
-    reorderCard({ columnId, startIndex, finishIndex: startIndex - 1 });
-  }, [columnId, reorderCard, startIndex]);
-
-  const moveDown = useCallback(() => {
-    reorderCard({ columnId, startIndex, finishIndex: startIndex + 1 });
-  }, [columnId, reorderCard, startIndex]);
-
   const moveToBottom = useCallback(() => {
     reorderCard({ columnId, startIndex, finishIndex: numCards - 1 });
   }, [columnId, reorderCard, startIndex, numCards]);
@@ -124,36 +95,15 @@ function LazyDropdownItems({ userId }: { userId: string }) {
   const isMoveUpDisabled = startIndex === 0;
   const isMoveDownDisabled = startIndex === numCards - 1;
 
-  const moveColumnOptions = getColumns().filter((column) => column.columnId !== columnId);
-
   return (
-    <>
-      <DropdownItemGroup title="Reorder">
-        <DropdownItem isDisabled={isMoveUpDisabled} onClick={moveToTop}>
-          Move to top
-        </DropdownItem>
-        {/* <DropdownItem isDisabled={isMoveUpDisabled} onClick={moveUp}>
-          Move up
-        </DropdownItem>
-        <DropdownItem isDisabled={isMoveDownDisabled} onClick={moveDown}>
-          Move down
-        </DropdownItem> */}
-        <DropdownItem isDisabled={isMoveDownDisabled} onClick={moveToBottom}>
-          Move to bottom
-        </DropdownItem>
-      </DropdownItemGroup>
-      {/* {moveColumnOptions.length ? (
-        <DropdownItemGroup title="Move to">
-          {moveColumnOptions.map((column) => (
-            <MoveToOtherColumnItem
-              key={column.columnId}
-              targetColumn={column}
-              startIndex={startIndex}
-            />
-          ))}
-        </DropdownItemGroup>
-      ) : null} */}
-    </>
+    <DropdownItemGroup title="Reorder">
+      <DropdownItem isDisabled={isMoveUpDisabled} onClick={moveToTop}>
+        Move to top
+      </DropdownItem>
+      <DropdownItem isDisabled={isMoveDownDisabled} onClick={moveToBottom}>
+        Move to bottom
+      </DropdownItem>
+    </DropdownItemGroup>
   );
 }
 

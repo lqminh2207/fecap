@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import type { IResponseApi } from '@/configs/axios';
@@ -29,6 +30,7 @@ interface IAuthLoginMutationProps {
 }
 
 export function useCheckResetCodeMutation({ configs }: IAuthLoginMutationProps = {}) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return useMutation({
@@ -37,7 +39,7 @@ export function useCheckResetCodeMutation({ configs }: IAuthLoginMutationProps =
     onSuccess: () => {},
 
     onError(error) {
-      notify({ type: 'error', message: getErrorMessage(error) });
+      notify({ type: 'error', message: getErrorMessage(t, error) });
       navigate(APP_PATHS.login);
     },
 

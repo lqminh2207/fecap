@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { Button, Icon, IconButton, Stack, Text } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import { PiUsersThreeFill } from 'react-icons/pi';
 import { RiEditFill } from 'react-icons/ri';
 
@@ -10,6 +11,7 @@ import type { IProject } from '../../list-project/types';
 import type { IOptionUserSelect } from '../components/users-async-select';
 
 export function ProjectMembersWidget({ project }: { project?: IProject }) {
+  const { t } = useTranslation();
   const hasMembers = (project?.members?.length || 0) > 0 || !!project?.leadId;
 
   const [initialMembers, setInitialMembers] = useState<Set<string>>(new Set());
@@ -21,7 +23,7 @@ export function ProjectMembersWidget({ project }: { project?: IProject }) {
     project?.members?.map((member) =>
       tempDefaultUsers.push({
         value: member.id,
-        label: member.fullName,
+        label: `${member.fullName} (${member.userName})`,
         image: '',
       })
     );
@@ -61,7 +63,7 @@ export function ProjectMembersWidget({ project }: { project?: IProject }) {
           alignItems="center"
         >
           <Icon boxSize={5} color="neutral.300" mr={3} as={PiUsersThreeFill} />
-          Members
+          {t('fields.members')}
         </Text>
         {hasMembers && (
           <UpsertMembersWidget
@@ -89,16 +91,16 @@ export function ProjectMembersWidget({ project }: { project?: IProject }) {
         )}
       </Stack>
       {hasMembers ? (
-        <>
+        <Stack>
           <Text wordBreak="break-all" whiteSpace="normal" flex={1} fontWeight={500}>
             {project?.leadName} (Leader)
           </Text>
           {project?.members.map((member, index) => (
             <Text key={index} wordBreak="break-all" whiteSpace="normal" flex={1} fontWeight={500}>
-              {member.roleName} - {member.fullName}
+              {member.userName} ({member.positionName})
             </Text>
           ))}
-        </>
+        </Stack>
       ) : (
         <UpsertMembersWidget
           defaultUserValue={Array.from(initialMembers)}
@@ -106,7 +108,7 @@ export function ProjectMembersWidget({ project }: { project?: IProject }) {
           projectId={project?.id || ''}
         >
           <Button width="fit-content" leftIcon={<>+</>}>
-            Add Members
+            {`${t('common.add')} ${t('fields.members').toLowerCase()}`}
           </Button>
         </UpsertMembersWidget>
       )}

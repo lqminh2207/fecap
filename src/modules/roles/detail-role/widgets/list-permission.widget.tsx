@@ -16,6 +16,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import { GrUserExpert } from 'react-icons/gr';
 import { RiEditFill } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +43,7 @@ function PermissionGroup({
   initiallySelectedPermissions,
   onPermissionChange,
 }: PermissionsGroupComponentProps) {
+  const { t } = useTranslation();
   // Initialize checked permissions based on initiallySelectedPermissions
   const [checkedPermissions, setCheckedPermissions] = useState(
     group.permissions.map((permission) => initiallySelectedPermissions.includes(permission.id))
@@ -79,8 +81,8 @@ function PermissionGroup({
   };
 
   return (
-    <>
-      <Stack direction="row" alignItems="center">
+    <AccordionItem border="none">
+      <Stack direction="row" alignItems="center" w="full">
         <Checkbox
           isChecked={allChecked}
           borderColor="gray.300"
@@ -88,39 +90,47 @@ function PermissionGroup({
           isDisabled={isDisabled}
           onChange={handleParentChange}
         >
-          <Stack direction="row" alignItems="center">
-            <GrUserExpert color="gray" size={16} />
-            <Text>{getGroupPermission(group.name as GroupPermissionEnum)}</Text>
-          </Stack>
+          <AccordionButton pl={1} border="none">
+            <Stack direction="row" alignItems="center">
+              <GrUserExpert color="gray" size={16} />
+              <Text>{getGroupPermission(t, group.name as GroupPermissionEnum)}</Text>
+            </Stack>
+            <AccordionIcon />
+          </AccordionButton>
         </Checkbox>
       </Stack>
-      <Stack pl={8} spacing={2} direction="row" alignItems="stretch">
-        <Box width="1px" bg="gray.300" />
-        <Stack spacing={1}>
-          {group.permissions.map((permission, index) => (
-            <Checkbox
-              key={permission.id}
-              borderColor="gray.300"
-              paddingLeft={3}
-              isDisabled={isDisabled}
-              isChecked={checkedPermissions[index]}
-              onChange={handleChildChange(index)}
-            >
-              <Text key={permission.id}>{getPermission(permission.name as PermissionEnum)}</Text>
-            </Checkbox>
-          ))}
+      <AccordionPanel px={1} py={1}>
+        <Stack pl={8} spacing={2} direction="row" alignItems="stretch">
+          <Box width="1px" bg="gray.300" />
+          <Stack spacing={1}>
+            {group.permissions.map((permission, index) => (
+              <Checkbox
+                key={permission.id}
+                borderColor="gray.300"
+                paddingLeft={3}
+                isDisabled={isDisabled}
+                isChecked={checkedPermissions[index]}
+                onChange={handleChildChange(index)}
+              >
+                <Text key={permission.id}>
+                  {getPermission(t, permission.name as PermissionEnum)}
+                </Text>
+              </Checkbox>
+            ))}
+          </Stack>
         </Stack>
-      </Stack>
-    </>
+      </AccordionPanel>
+    </AccordionItem>
   );
 }
 
 function InitPermissionGroup({ group }: { group: IGroupPermission }) {
+  const { t } = useTranslation();
   return (
     <Stack direction="column" alignItems="start">
       <Stack direction="row" alignItems="center">
         <GrUserExpert color="gray" size={16} />
-        <Text>{getGroupPermission(group.name as GroupPermissionEnum)}</Text>
+        <Text>{getGroupPermission(t, group.name as GroupPermissionEnum)}</Text>
       </Stack>
 
       <Stack pl={8} spacing={2} direction="row" alignItems="stretch">
@@ -128,7 +138,7 @@ function InitPermissionGroup({ group }: { group: IGroupPermission }) {
         <Stack spacing={1}>
           {group.permissions.map((permission) => (
             <Text key={permission.id} paddingLeft={3}>
-              {getPermission(permission.name as PermissionEnum)}
+              {getPermission(t, permission.name as PermissionEnum)}
             </Text>
           ))}
         </Stack>
@@ -160,6 +170,7 @@ export function ListPermissionWidget({
   isCreate?: boolean;
   isEditable?: boolean;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Initialize selectedPermissions with initiallySelectedPermissions
@@ -232,7 +243,7 @@ export function ListPermissionWidget({
       <Stack bg="white" pt={2} flex={1} flexBasis="10%" rounded={2.5} justify="center" spacing={2}>
         {!isLoading && isError ? (
           <Flex my={4} justify="center">
-            <Text>No data</Text>
+            <Text>{t('common.noData')}</Text>
           </Flex>
         ) : isLoading || !permissionsLoaded ? (
           <>
@@ -269,7 +280,7 @@ export function ListPermissionWidget({
                 <h2>
                   <AccordionButton bg="gray.100" borderBottom="1px solid" borderColor="gray.300">
                     <Box as="span" flex="1" textAlign="left">
-                      Permissions
+                      {t('fields.permission')}
                     </Box>
                     <AccordionIcon />
                   </AccordionButton>
@@ -277,14 +288,16 @@ export function ListPermissionWidget({
                 <AccordionPanel pb={4} maxH="800px" overflow="scroll">
                   <Box p={3}>
                     {isEditing || isCreate
-                      ? groupPermissions.map((group) => (
-                          <PermissionGroup
-                            key={group.id}
-                            group={group}
-                            isDisabled={isDisabled}
-                            initiallySelectedPermissions={Array.from(selectedPermissions)}
-                            onPermissionChange={handlePermissionChange}
-                          />
+                      ? groupPermissions.map((group, _index) => (
+                          <Accordion key={group.id} allowMultiple>
+                            <PermissionGroup
+                              key={group.id}
+                              group={group}
+                              isDisabled={isDisabled}
+                              initiallySelectedPermissions={Array.from(selectedPermissions)}
+                              onPermissionChange={handlePermissionChange}
+                            />
+                          </Accordion>
                         ))
                       : initialGroups.map((group) => (
                           <InitPermissionGroup key={group.id} group={group} />
@@ -317,7 +330,7 @@ export function ListPermissionWidget({
                 isDisabled={!hasChanges() || isDisabled} // Disable if no changes
                 onClick={handleSubmit}
               >
-                Save
+                {t('common.save')}
               </Button>
               <Button
                 variant="ghost"
@@ -326,7 +339,7 @@ export function ListPermissionWidget({
                 w="fit-content"
                 onClick={() => navigate(-1)}
               >
-                Back
+                {t('common.back')}
               </Button>
               <Button
                 variant="ghost"
@@ -335,7 +348,7 @@ export function ListPermissionWidget({
                 w="fit-content"
                 onClick={() => setIsEditing(false)}
               >
-                Close
+                {t('common.cancel')}
               </Button>
             </Stack>
           </>

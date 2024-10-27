@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { Button, Stack } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 
 import { useUpsertLabelHook } from '../hooks/mutations';
 
@@ -13,15 +14,18 @@ export interface UpsertLabelWidgetProps {
   label?: ILabel;
   isOpen: boolean;
   onClose: () => void;
+  isDefault?: boolean;
 }
 
 export function UpsertLabelWidget(props: UpsertLabelWidgetProps) {
-  const { isUpdate, label, isOpen, onClose } = props;
+  const { t } = useTranslation();
+  const { isUpdate, label, isOpen, onClose, isDefault } = props;
 
   const { formUpsertLabel, handleUpsertLabel, isLoading, reset } = useUpsertLabelHook({
     id: label?.id,
     isUpdate,
     onClose,
+    isDefault,
   });
 
   const {
@@ -56,10 +60,14 @@ export function UpsertLabelWidget(props: UpsertLabelWidgetProps) {
           type="submit"
           isDisabled={isLoading || (isUpdate && !isDirty)}
         >
-          Save
+          {t('common.save')}
         </Button>
       )}
-      title={isUpdate ? 'Update label' : 'Create label'}
+      title={
+        isUpdate
+          ? `${t('common.update')} ${t('common.label').toLowerCase()}`
+          : `${t('common.create')} ${t('common.label').toLowerCase()}`
+      }
       isOpen={isOpen}
       onClose={onClose}
       onCloseComplete={reset}
@@ -71,7 +79,7 @@ export function UpsertLabelWidget(props: UpsertLabelWidgetProps) {
       >
         <Stack spacing={5}>
           <CustomInput
-            label="Title"
+            label={t('fields.title')}
             isRequired
             registration={register('title')}
             error={errors.title}

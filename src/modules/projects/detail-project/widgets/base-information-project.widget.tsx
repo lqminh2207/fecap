@@ -1,4 +1,5 @@
 import { Stack, Text } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 
 import { ProjectMembersWidget } from './project-members.widget';
 import { BadgeStatus } from '../components';
@@ -6,42 +7,65 @@ import { BadgeStatus } from '../components';
 import type { IProject, ProjectStatusEnum } from '../../list-project/types';
 
 import { Head } from '@/components/elements';
+import { ChangeStatus } from '@/components/widgets/change-status';
+import { PermissionEnum } from '@/configs';
 import { formatDate } from '@/libs/helpers';
 import { InfoCard } from '@/modules/profile/components';
 
-export function BaseInformationProjectWidget({ project }: { project?: IProject }) {
+export function BaseInformationProjectWidget({
+  project,
+  permissions,
+}: {
+  project?: IProject;
+  permissions: Record<string, boolean>;
+}) {
+  const { t } = useTranslation();
+
   const infoData = [
     {
-      label: 'Name',
+      label: t('fields.name'),
       text: project?.name || '',
     },
     {
-      label: 'Code',
+      label: t('fields.code'),
       text: project?.code || '',
     },
     {
-      label: 'Description',
+      label: t('fields.description'),
       text: project?.description || '',
     },
-    {
-      label: 'Status',
+    permissions[PermissionEnum.GET_ALL_PROJECT] && {
+      label: t('fields.status'),
       text: <BadgeStatus status={project?.status as ProjectStatusEnum} />,
     },
-    {
-      label: 'Isvisible',
-      text: project?.isVisible ? 'Yes' : 'No',
+    permissions[PermissionEnum.GET_ALL_PROJECT] && {
+      label: t('fields.visible'),
+      text: (
+        <ChangeStatus
+          id={project?.id || ''}
+          initStatus={project?.isVisible || false}
+          title={
+            project?.isVisible
+              ? `${t('actions.archive')} ${t('common.project').toLowerCase()}?`
+              : `${t('actions.unarchive')} ${t('common.project').toLowerCase()}?`
+          }
+          description={
+            project?.isVisible ? t('actions.archiveProject') : t('actions.unarchiveProject')
+          }
+        />
+      ),
     },
     {
-      label: 'Start date',
+      label: t('fields.startDate'),
       text: project?.startDate
         ? formatDate({ date: project?.startDate, format: 'DD-MM-YYYY' })
         : '',
     },
     {
-      label: 'End date',
+      label: t('fields.endDate'),
       text: project?.endDate ? formatDate({ date: project?.endDate, format: 'DD-MM-YYYY' }) : '',
     },
-  ];
+  ].filter(Boolean);
 
   return (
     <>
@@ -59,13 +83,13 @@ export function BaseInformationProjectWidget({ project }: { project?: IProject }
                 borderColor: 'neutral.500',
               }}
             >
-              Project information
+              {t('header.projectInformation')}
             </Text>
             <InfoCard
               data={infoData}
               labelProps={{
                 sx: {
-                  w: '100px',
+                  w: '150px',
                 },
               }}
             />

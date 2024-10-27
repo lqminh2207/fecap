@@ -1,9 +1,10 @@
 import type { IBaseEntity } from '@/types';
 
 export enum ProjectStatusEnum {
-  Pending = 1,
-  Active = 2,
-  Inactive = 3,
+  NotStarted = 1,
+  InProgress = 2,
+  Completed = 3,
+  Canceled = 4,
 }
 
 export type ProjectMember = {
@@ -11,6 +12,7 @@ export type ProjectMember = {
   fullName: string;
   userName: string;
   roleName: string;
+  positionName: string;
   avatar?: string;
 };
 
@@ -30,5 +32,6 @@ export type IProject = IBaseEntity & {
   isVisible: boolean;
   leadId?: string;
   leadName?: string;
+  leadPosition?: string;
   members: ProjectMember[];
 };

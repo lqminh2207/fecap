@@ -1,19 +1,22 @@
-import { Box, Button, Grid, GridItem, HStack, Spacer } from '@chakra-ui/react';
+import { Box, Button, Grid, GridItem, HStack, Spacer, useDisclosure } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
-import { AddNewJobWidget } from './add-new-job.widget';
 import { useJobsQueryFilterStateContext } from '../contexts';
+import { UpsertJobWidget } from './upsert-job.widget';
 
 import { SearchInput } from '@/components/elements';
 
 export function ActionTableJobsWidget() {
+  const { t } = useTranslation();
+  const disclosureModal = useDisclosure();
   const { jobsQueryState, setJobsQueryFilterState } = useJobsQueryFilterStateContext();
   const { pathname } = useLocation();
 
   const isShowFilterJob = pathname.includes('jobs');
 
   return (
-    <Box p={5} mb={6} rounded={2.5} bg="white" w="full" shadow="0 1px 4px 0 #0002">
+    <Box p={5} py={3} mb={6} rounded={2.5} bg="white" w="full" shadow="0 1px 4px 0 #0002">
       <HStack justify="space-between">
         <Grid
           w={{
@@ -25,7 +28,7 @@ export function ActionTableJobsWidget() {
         >
           <GridItem colSpan={2}>
             <SearchInput
-              placeholder="Enter title..."
+              placeholder={`${t('common.enter')} ${t('fields.title').toLowerCase()}...`}
               initValue={jobsQueryState.filters.title || ''}
               onHandleSearch={(keyword) => {
                 setJobsQueryFilterState({ title: keyword });
@@ -36,9 +39,10 @@ export function ActionTableJobsWidget() {
         {isShowFilterJob && (
           <>
             <Spacer />
-            <AddNewJobWidget>
-              <Button leftIcon={<>+</>}>Create</Button>
-            </AddNewJobWidget>
+            <Button size="md" leftIcon={<>+</>} onClick={disclosureModal.onOpen}>
+              {t('common.create')}
+            </Button>
+            <UpsertJobWidget isOpen={disclosureModal.isOpen} onClose={disclosureModal.onClose} />
           </>
         )}
       </HStack>

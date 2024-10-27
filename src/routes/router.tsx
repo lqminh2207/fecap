@@ -8,6 +8,7 @@ import { jobsRoutes } from './elements/jobs.route';
 import { positionsRoutes } from './elements/positions.route';
 import { projectsRoutes } from './elements/projects.route';
 import { rolesRoutes } from './elements/roles.route';
+import { skillsRoutes } from './elements/skills.route';
 import { usersRoutes } from './elements/users.route';
 import { APP_PATHS } from './paths/app.paths';
 
@@ -22,6 +23,7 @@ const { ProtectedRoute } = lazyImport(() => import('./protected-route'), 'Protec
 const { ErrorPage } = lazyImport(() => import('@/modules/errors/'), 'ErrorPage');
 const { Error404Page } = lazyImport(() => import('@/modules/errors/'), 'Error404Page');
 const { Error403Page } = lazyImport(() => import('@/modules/errors'), 'Error403Page');
+const { SettingsPage } = lazyImport(() => import('@/modules/settings/pages'), 'SettingsPage');
 
 const allRoutes = createBrowserRouter([
   {
@@ -34,12 +36,14 @@ const allRoutes = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to={APP_PATHS.HOME} /> },
+      { path: 'settings', element: <SettingsPage /> },
       dashboardRoutes(),
       profileRoutes(),
       usersRoutes(),
       rolesRoutes(),
       projectsRoutes(),
       jobsRoutes(),
+      skillsRoutes(),
       applicantsRoutes(),
       positionsRoutes(),
     ],

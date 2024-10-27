@@ -44,8 +44,6 @@ export function useGetListIssueQuery(props: UseGetListIssueQueryProps = {}) {
         {
           pageIndex,
           pageSize,
-          orderBy: 'createDate',
-          orderByDesc: 'desc',
         },
         params
       ),
